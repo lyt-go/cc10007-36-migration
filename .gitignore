@@ -82,6 +82,9 @@ desktop.ini
 
 # ===== 运行期本地文件 =====
 *.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 *.db
 *.pid
 *.seed
+backend/data/

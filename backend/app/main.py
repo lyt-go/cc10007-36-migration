@@ -9,6 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.migration import engine
+from app.persistence import persistent_store
 from app.routers import ROUTERS
 from app.store import store
 
@@ -24,6 +26,17 @@ app.add_middleware(
 
 for module in ROUTERS:
     app.include_router(module.router)
+
+
+@app.on_event("startup")
+def resume_migration_on_startup() -> None:
+    """重启后若上次分批迁移中断，按持久化断点继续；已切换则直接以持久库为准。"""
+    engine.resume_on_startup()
+
+
+@app.on_event("shutdown")
+def close_persistent_store() -> None:
+    persistent_store.close()
 
 
 @app.get("/api/health")

@@ -45,6 +45,8 @@ def create_entry(payload: EntryPayload) -> ActionResult:
     entry, missing = service.create_entry(payload.values)
     if missing:
         return ActionResult(ok=False, message=f"缺少必填字段：{'、'.join(missing)}")
+    if entry is None:
+        return ActionResult(ok=False, message="迁移写入冻结期，登记已被拦截并记录审计")
     return ActionResult(ok=True, message="看板视图已登记", entry=entry)
 
 

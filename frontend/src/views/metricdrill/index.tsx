@@ -39,7 +39,7 @@ const stats = [
   }
 ]
 
-type Row = Record<string, string | number | null>
+type Row = Record<string, string | number | null | Record<string, unknown>>
 
 export default function MetricdrillView() {
   const [rows, setRows] = useState<Row[]>([])
@@ -129,13 +129,19 @@ export default function MetricdrillView() {
         <thead>
           <tr>
             {columns.map((column) => <th key={column}>{column}</th>)}
+            <th>持久化版本/批次</th>
             <th>可执行动作</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={String(row.id)}>
-              {columns.map((column) => <td key={column}>{row[column] ?? '—'}</td>)}
+              {columns.map((column) => <td key={column}>{row[column] === null || row[column] === undefined ? '—' : String(row[column])}</td>)}
+              <td>
+                {row._persisted
+                  ? `v${String((row._persisted as Record<string, unknown>).version)} / 批次${String((row._persisted as Record<string, unknown>).batch_no ?? '—')}`
+                  : '内存态'}
+              </td>
               <td className="row-actions">
                 {actions.map((action) => (
                   <button key={action} className="link" type="button" onClick={() => void runAction(action, row)}>
@@ -147,7 +153,7 @@ export default function MetricdrillView() {
           ))}
           {rows.length === 0 && (
             <tr>
-              <td className="empty-state" colSpan={columns.length + 1}>暂无指标归因数据，可先登记归因分析</td>
+              <td className="empty-state" colSpan={columns.length + 2}>暂无指标归因数据，可先登记归因分析</td>
             </tr>
           )}
         </tbody>
